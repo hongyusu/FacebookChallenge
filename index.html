@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="FacebookChallenge : ">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>FacebookChallenge</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/hongyusu/FacebookChallenge">View on GitHub</a>
+
+          <h1 id="project_title">FacebookChallenge</h1>
+          <h2 id="project_tagline"></h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/hongyusu/FacebookChallenge/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/hongyusu/FacebookChallenge/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a id="facebook-challenge-of-detecting-bots-in-the-online-bidding-environment" class="anchor" href="#facebook-challenge-of-detecting-bots-in-the-online-bidding-environment" aria-hidden="true"><span class="octicon octicon-link"></span></a>Facebook challenge of detecting bots in the online bidding environment</h1>
+
+<p>This repository documents the strategy, model and algorithm I used in Facebook challenge of detecting bots in the online bidding environment. The model I developed has an AUC score of 90.757% where the best AUC score reported in the leaderboard is about 94%.</p>
+
+<h2>
+<a id="lessons-learned" class="anchor" href="#lessons-learned" aria-hidden="true"><span class="octicon octicon-link"></span></a>Lessons learned</h2>
+
+<p>First thing first, lessons learned from this competetion can be potentially useful. They are summerized as the following bullet list</p>
+
+<ol>
+<li>Support can be used as a baseline classifier. It is a stable classifier which is not very good for ensemble model.</li>
+<li>Random forest can be very useful in addition to SVM for the following reasons:
+
+<ol>
+<li>RF does not need feature normalization, centering, etc</li>
+<li>RF does not have many parameter to tune</li>
+<li>It is relatively fast to learn a RF than SVM</li>
+<li>Off-the-shelf function in MATLAB</li>
+</ol>
+</li>
+<li>Adding more feature will not always helpful</li>
+</ol>
+
+<h2>
+<a id="final-strategy" class="anchor" href="#final-strategy" aria-hidden="true"><span class="octicon octicon-link"></span></a>Final strategy</h2>
+
+<p>The following is about the final strategy I decided to use in the competetion. It could be better given more time.</p>
+
+<h3>
+<a id="feature-representation" class="anchor" href="#feature-representation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Feature representation</h3>
+
+<ol>
+<li>Features are extract from auction log including local features, global features, local per hour feature, <em>bag-of-words</em> features</li>
+<li>
+<p>Some of the features are not used in the learning algorithm, which can potentially improve the prediction performance of the model</p>
+
+<ol>
+<li>
+<p>Global features</p>
+
+<ol>
+<li>Global feature are made by using all bids </li>
+<li>Global features are listed in the following table</li>
+<li>There is only one bit for bid feature, four bits for others</li>
+<li>
+<p>Feature number 8-14 are computed but are not used in this stage</p>
+
+<table>
+<thead>
+<tr>
+<th align="right">Feature Id</th>
+<th align="right">Feature Name</th>
+<th align="right">Feature Position</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right">1</td>
+<td align="right">bid</td>
+<td align="right">1</td>
+</tr>
+<tr>
+<td align="right">2</td>
+<td align="right">auction</td>
+<td align="right">3</td>
+</tr>
+<tr>
+<td align="right">3</td>
+<td align="right">merchandise</td>
+<td align="right">4</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">device</td>
+<td align="right">5</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td align="right">time</td>
+<td align="right">6</td>
+</tr>
+<tr>
+<td align="right">6</td>
+<td align="right">country</td>
+<td align="right">7</td>
+</tr>
+<tr>
+<td align="right">7</td>
+<td align="right">ip</td>
+<td align="right">8</td>
+</tr>
+<tr>
+<td align="right">8</td>
+<td align="right">url</td>
+<td align="right">9</td>
+</tr>
+<tr>
+<td align="right">9</td>
+<td align="right">minute</td>
+<td align="right">10</td>
+</tr>
+<tr>
+<td align="right">10</td>
+<td align="right">hour</td>
+<td align="right">11</td>
+</tr>
+<tr>
+<td align="right">11</td>
+<td align="right">day</td>
+<td align="right">12</td>
+</tr>
+<tr>
+<td align="right">12</td>
+<td align="right">hourday</td>
+<td align="right">13</td>
+</tr>
+<tr>
+<td align="right">13</td>
+<td align="right">interval</td>
+<td align="right">14</td>
+</tr>
+<tr>
+<td align="right">14</td>
+<td align="right">average intercal</td>
+<td align="right">15</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ol>
+</li>
+<li>
+<p>Auction specific features</p>
+
+<ol>
+<li>Auction specific features are extracted from bider-auction files</li>
+<li>We use auctions which has more than 2 bids</li>
+<li>Features are listed in the following table </li>
+<li>
+<p>Besides there being one position for the bid sum, there is one position for average of each individual</p>
+
+<table>
+<thead>
+<tr>
+<th align="right">Feature Id</th>
+<th align="right">Feature Name</th>
+<th align="right">Feature Position</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right">1</td>
+<td align="right">bid</td>
+<td align="right">1</td>
+</tr>
+<tr>
+<td align="right">2</td>
+<td align="right">device</td>
+<td align="right">5</td>
+</tr>
+<tr>
+<td align="right">3</td>
+<td align="right">country</td>
+<td align="right">7</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">ip</td>
+<td align="right">8</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td align="right">url</td>
+<td align="right">9</td>
+</tr>
+<tr>
+<td align="right">6</td>
+<td align="right">interval</td>
+<td align="right">14</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ol>
+</li>
+<li>
+<p>Per-hour features</p>
+
+<ol>
+<li>Per-hour features include features listed in the following table:</li>
+<li>Per-hour features are computed based on hours</li>
+<li>
+<p>There is one position for the average of the per hour features</p>
+
+<table>
+<thead>
+<tr>
+<th align="right">Feature Id</th>
+<th align="right">Feature Name</th>
+<th align="right">Feature Position</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right">1</td>
+<td align="right">bid</td>
+<td align="right">1</td>
+</tr>
+<tr>
+<td align="right">2</td>
+<td align="right">auction</td>
+<td align="right">3</td>
+</tr>
+<tr>
+<td align="right">3</td>
+<td align="right">merchandise</td>
+<td align="right">4</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">device</td>
+<td align="right">5</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td align="right">country</td>
+<td align="right">7</td>
+</tr>
+<tr>
+<td align="right">6</td>
+<td align="right">ip</td>
+<td align="right">8</td>
+</tr>
+<tr>
+<td align="right">7</td>
+<td align="right">url</td>
+<td align="right">9</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ol>
+</li>
+<li>
+<p>Per-minute features</p>
+
+<ol>
+<li>Per-minute features include features listed in the following table:</li>
+<li>Per-minute features are computed based on minute</li>
+<li>
+<p>There is one position for the average of the per minute features</p>
+
+<table>
+<thead>
+<tr>
+<th align="right">Feature Id</th>
+<th align="right">Feature Name</th>
+<th align="right">Feature Position</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right">1</td>
+<td align="right">bid</td>
+<td align="right">1</td>
+</tr>
+<tr>
+<td align="right">2</td>
+<td align="right">auction</td>
+<td align="right">3</td>
+</tr>
+<tr>
+<td align="right">3</td>
+<td align="right">merchandise</td>
+<td align="right">4</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">device</td>
+<td align="right">5</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td align="right">country</td>
+<td align="right">7</td>
+</tr>
+<tr>
+<td align="right">6</td>
+<td align="right">ip</td>
+<td align="right">8</td>
+</tr>
+<tr>
+<td align="right">7</td>
+<td align="right">url</td>
+<td align="right">9</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ol>
+</li>
+<li>
+<p><em>bag-of-words</em> features</p>
+
+<ol>
+<li>Each bider is represented by the following <em>bag-of-words</em> features</li>
+<li>Most of them are not used in the current stage of the experiment due to the time limit</li>
+<li>However, we consider auction/merchandise/device/country information as the only <em>bag-of-words</em> features</li>
+</ol>
+
+<table>
+<thead>
+<tr>
+<th align="right">Feature Id</th>
+<th align="right">Feature Name</th>
+<th align="right">Feature Position</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right">1</td>
+<td align="right">auction</td>
+<td align="right">3</td>
+</tr>
+<tr>
+<td align="right">2</td>
+<td align="right">merchandise</td>
+<td align="right">4</td>
+</tr>
+<tr>
+<td align="right">3</td>
+<td align="right">device</td>
+<td align="right">5</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">time</td>
+<td align="right">6</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td align="right">country</td>
+<td align="right">7</td>
+</tr>
+<tr>
+<td align="right">6</td>
+<td align="right">ip</td>
+<td align="right">8</td>
+</tr>
+<tr>
+<td align="right">7</td>
+<td align="right">url</td>
+<td align="right">9</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ol>
+</li>
+</ol>
+
+<h3>
+<a id="learning-algorithm" class="anchor" href="#learning-algorithm" aria-hidden="true"><span class="octicon octicon-link"></span></a>Learning algorithm</h3>
+
+<ol>
+<li>
+<p>Support Vector Machine</p>
+
+<ol>
+<li>Support Vector Machine (SVM) with probability output as baseline learner.</li>
+<li>Feature representation of data is introduced in the last section.</li>
+<li>We center the feature vector to have zero mean and unit variance such that points are located in a unit square.</li>
+<li>Centering the featuer is done base on both training and testing data.</li>
+<li>We use <em>Gaussian</em> RBF kernel over the feature representation of the data points.</li>
+<li>We use grid Search for the best parameter combination, e,g, margin slack parameter, <em>Gaussian</em> width parameter.</li>
+<li>Best model is then used for prediction.</li>
+<li>We use the implementation of SVM from LibSVM toolbox</li>
+<li>
+<p>The basic MATLAB usage example is </p>
+
+<pre><code>    model = svmtrain(Ytr,Xtr,sprintf('-q -s 0 -c %.2f -t 2 -g %s -b 1',c,g));
+    [~,~,Yprobsvm] = svmpredict(Yts,Xts, model ,'-b 1'); 
+    [~,~,~,AUC] = perfcurve(Yts,Yprobsvm,1);
+</code></pre>
+</li>
+</ol>
+</li>
+<li>
+<p>Random Forest </p>
+
+<ol>
+<li>We use build-in function in MATLAB</li>
+<li>We tune the parameter of the number of trees with 10 fold cross validation</li>
+<li>The best model is then used for prediction</li>
+<li>The basic MATLAB usage example is 
+model = TreeBagger(c,Xtr,Ytr, 'Method', 'classification');
+[~,Yprobtree] = predict(model, Xts);</li>
+<li>Be careful with the order of the probability outputs</li>
+</ol>
+</li>
+</ol>
+
+<h3>
+<a id="measure-the-performance" class="anchor" href="#measure-the-performance" aria-hidden="true"><span class="octicon octicon-link"></span></a>Measure the performance</h3>
+
+<p>We use AUC score to measure the prediction performance of the models.</p>
+
+<h3>
+<a id="experiments" class="anchor" href="#experiments" aria-hidden="true"><span class="octicon octicon-link"></span></a>Experiments:</h3>
+
+<ol>
+<li>
+<p>SVM</p>
+
+<ol>
+<li>
+<p>global + auction + hour, duplicate 7 global feature, 10 fold cv</p>
+
+<table>
+<thead>
+<tr>
+<th align="right">Experiment</th>
+<th align="right">Time</th>
+<th align="right">Test AUC</th>
+<th align="right">CV best AUC</th>
+<th align="right">Training all AUC</th>
+<th align="right">K</th>
+<th align="right">k</th>
+<th align="right">SVM C</th>
+<th align="right">RBF G</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"></td>
+<td align="right">0608</td>
+<td align="right"></td>
+<td align="right">0.8916</td>
+<td align="right">0.9950</td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right">0.5</td>
+<td align="right">50</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>auction + hour + minute, 10 fold cv</p>
+
+<table>
+<thead>
+<tr>
+<th align="right">Experiment</th>
+<th align="right">Time</th>
+<th align="right">Test AUC</th>
+<th align="right">CV best AUC</th>
+<th align="right">Training all AUC</th>
+<th align="right">K</th>
+<th align="right">k</th>
+<th align="right">SVM C</th>
+<th align="right">RBF G</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"></td>
+<td align="right">0608</td>
+<td align="right"></td>
+<td align="right">0.8410</td>
+<td align="right">0.9325</td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right">5</td>
+<td align="right">0.5</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>global + auction + hour + minute, 10 fold cv</p>
+
+<table>
+<thead>
+<tr>
+<th align="right">Experiment</th>
+<th align="right">Time</th>
+<th align="right">Test AUC</th>
+<th align="right">CV best AUC</th>
+<th align="right">Training all AUC</th>
+<th align="right">K</th>
+<th align="right">k</th>
+<th align="right">SVM C</th>
+<th align="right">RBF G</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"></td>
+<td align="right">0608</td>
+<td align="right"></td>
+<td align="right">0.8788</td>
+<td align="right">0.9898</td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right">1</td>
+<td align="right">50</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>global + auction + hour + minute, duplicate 7 global, 10 fold cv</p>
+
+<table>
+<thead>
+<tr>
+<th align="right">Experiment</th>
+<th align="right">Time</th>
+<th align="right">Test AUC</th>
+<th align="right">CV best AUC</th>
+<th align="right">Training all AUC</th>
+<th align="right">K</th>
+<th align="right">k</th>
+<th align="right">SVM C</th>
+<th align="right">RBF G</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"></td>
+<td align="right">0608</td>
+<td align="right"></td>
+<td align="right">0.8895</td>
+<td align="right">0.9936</td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right">0.01</td>
+<td align="right">50</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>global + auction + hour + minute + <em>bag-of-words</em> country, duplicate 7 global, 10 fold cv</p>
+
+<table>
+<thead>
+<tr>
+<th align="right">Experiment</th>
+<th align="right">Time</th>
+<th align="right">Test AUC</th>
+<th align="right">CV best AUC</th>
+<th align="right">Training all AUC</th>
+<th align="right">K</th>
+<th align="right">k</th>
+<th align="right">SVM C</th>
+<th align="right">RBF G</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"></td>
+<td align="right">0608</td>
+<td align="right"></td>
+<td align="right">0.8819</td>
+<td align="right">0.9957</td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right">5</td>
+<td align="right">50</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p><em>bag-of-words</em> country, 10 fold cv, tfidf</p>
+
+<table>
+<thead>
+<tr>
+<th align="right">Experiment</th>
+<th align="right">Time</th>
+<th align="right">Test AUC</th>
+<th align="right">CV best AUC</th>
+<th align="right">Training all AUC</th>
+<th align="right">K</th>
+<th align="right">k</th>
+<th align="right">SVM C</th>
+<th align="right">RBF G</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"></td>
+<td align="right">0608</td>
+<td align="right"></td>
+<td align="right">0.6934</td>
+<td align="right">0.8241</td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right">1</td>
+<td align="right">0.001</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p><em>bag-of-words</em> country, 10 fold cv, centering</p>
+
+<table>
+<thead>
+<tr>
+<th align="right">Experiment</th>
+<th align="right">Time</th>
+<th align="right">Test AUC</th>
+<th align="right">CV best AUC</th>
+<th align="right">Training all AUC</th>
+<th align="right">K</th>
+<th align="right">k</th>
+<th align="right">SVM C</th>
+<th align="right">RBF G</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"></td>
+<td align="right">0608</td>
+<td align="right"></td>
+<td align="right">0.8484</td>
+<td align="right">0.9507</td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right">0.5</td>
+<td align="right">0.5</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ol>
+</li>
+<li>
+<p>Random Forest</p>
+
+<ol>
+<li>
+<p>Random forest, global + auction + hour + minute + <em>bag-of-words</em> country, 10 fold cv</p>
+
+<table>
+<thead>
+<tr>
+<th align="right">Experiment</th>
+<th align="right">Time</th>
+<th align="right">Test AUC</th>
+<th align="right">CV best AUC</th>
+<th align="right">Training all AUC</th>
+<th align="right">K</th>
+<th align="right">k</th>
+<th align="right">N</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"></td>
+<td align="right">0608</td>
+<td align="right"></td>
+<td align="right">0.9220</td>
+<td align="right">0.9974</td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right">125</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Random forest, global + auction + hour + minute + <em>bag-of-words</em> country/device, 10 fold cv</p>
+
+<table>
+<thead>
+<tr>
+<th align="right">Experiment</th>
+<th align="right">Time</th>
+<th align="right">Test AUC</th>
+<th align="right">CV best AUC</th>
+<th align="right">Training all AUC</th>
+<th align="right">K</th>
+<th align="right">k</th>
+<th align="right">N</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"></td>
+<td align="right">0608</td>
+<td align="right">0.90757</td>
+<td align="right">0.9238</td>
+<td align="right">0.9978</td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right">135</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Random forest, global + auction + hour + minute + <em>bag-of-words</em> auction/merchandise/country/device, 10 fold cv</p>
+
+<table>
+<thead>
+<tr>
+<th align="right">Experiment</th>
+<th align="right">Time</th>
+<th align="right">Test AUC</th>
+<th align="right">CV best AUC</th>
+<th align="right">Training all AUC</th>
+<th align="right">K</th>
+<th align="right">k</th>
+<th align="right">N</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"></td>
+<td align="right">0608</td>
+<td align="right"></td>
+<td align="right">0.9107</td>
+<td align="right">0.9980</td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right">195</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Random forest, global + auction + hour + minute + <em>bag-of-words</em> merchandise/country/device, 10 fold cv</p>
+
+<table>
+<thead>
+<tr>
+<th align="right">Experiment</th>
+<th align="right">Time</th>
+<th align="right">Test AUC</th>
+<th align="right">CV best AUC</th>
+<th align="right">Training all AUC</th>
+<th align="right">K</th>
+<th align="right">k</th>
+<th align="right">N</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"></td>
+<td align="right">0608</td>
+<td align="right"></td>
+<td align="right">0.9191</td>
+<td align="right">0.9981</td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right">195</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ol>
+</li>
+</ol>
+
+<h3>
+<a id="best-model" class="anchor" href="#best-model" aria-hidden="true"><span class="octicon octicon-link"></span></a>Best model</h3>
+
+<p>Best performance is achieved with model 2.2. In particular, it is a random forest learner with various hand made featuers.</p>
+
+<h2>
+<a id="history-of-coding-and-experiments" class="anchor" href="#history-of-coding-and-experiments" aria-hidden="true"><span class="octicon octicon-link"></span></a>History of coding and experiments</h2>
+
+<p>The following text documents the history of joining the competetion, including 
+1. Different feature embedding strategy
+2. Coding
+3. Parameter selection methods
+4. Experimental results</p>
+
+<h3>
+<a id="basic-setting-as-baseline" class="anchor" href="#basic-setting-as-baseline" aria-hidden="true"><span class="octicon octicon-link"></span></a>Basic setting as baseline</h3>
+
+<ul>
+<li>Support Vector Machine (SVM) with probability output as baseline learner</li>
+<li>Compose about 10 global values as feature representation of each bidder.</li>
+<li>
+<em>Gaussian</em> RBF kernel over the feature representation.</li>
+<li>Grid Search for the best parameter, e,g, margin slack parameter, <em>Gaussian</em> width parameter.</li>
+<li>Best model is then used for prediction.</li>
+<li>Prediction performance is shown in the following table</li>
+</ul>
+
+<table>
+<thead>
+<tr>
+<th align="right">Methods</th>
+<th align="right">Time</th>
+<th align="right">Test AUC</th>
+<th align="right">Training best AUC</th>
+<th align="right">Training all AUC</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right">Global</td>
+<td align="right">20150528</td>
+<td align="right">0.72485</td>
+<td align="right">0.75166</td>
+<td align="right">0.90494</td>
+</tr>
+<tr>
+<td align="right">Global+Local</td>
+<td align="right">20150530</td>
+<td align="right">0.87348</td>
+<td align="right">0.8230</td>
+<td align="right">0.8861</td>
+</tr>
+<tr>
+<td align="right">Global+Local(correct)</td>
+<td align="right">20150530</td>
+<td align="right">0.89848</td>
+<td align="right">0.8884</td>
+<td align="right">0.8983</td>
+</tr>
+<tr>
+<td align="right">Global+Local(correct)+10</td>
+<td align="right">20150601</td>
+<td align="right">0.88199</td>
+<td align="right">0.8858</td>
+<td align="right">0.9200</td>
+</tr>
+<tr>
+<td align="right">Global+Local(correct)+20</td>
+<td align="right">20150601</td>
+<td align="right">0.88186</td>
+<td align="right">0.8986</td>
+<td align="right">0.9198</td>
+</tr>
+<tr>
+<td align="right">add new time feature</td>
+<td align="right">20150601</td>
+<td align="right">0.88900</td>
+<td align="right">0.9020</td>
+<td align="right">0.9253</td>
+</tr>
+</tbody>
+</table>
+
+<h3>
+<a id="time" class="anchor" href="#time" aria-hidden="true"><span class="octicon octicon-link"></span></a>Time</h3>
+
+<ul>
+<li>1 second = 52631578</li>
+<li>min: 9631916842105263</li>
+<li>max: 9772885210526316 </li>
+<li>The data is for a period of 31 days.</li>
+</ul>
+
+<h3>
+<a id="feature" class="anchor" href="#feature" aria-hidden="true"><span class="octicon octicon-link"></span></a>Feature</h3>
+
+<p>unique bid</p>
+
+<ol>
+<li>unique auction</li>
+<li>unique merchandise</li>
+<li>unique device</li>
+<li>unique time in second</li>
+<li>unique country</li>
+<li>unique ip</li>
+<li>unique url</li>
+<li>unique minute</li>
+<li>unqiue hour</li>
+<li>unique day</li>
+<li>unique hour-day</li>
+<li>unique interval </li>
+<li><p>unique intervalcount</p></li>
+</ol>
+
+<ul>
+<li>
+<p>Global features (1+13x4) </p>
+
+<ul>
+<li>How many unique XXX</li>
+<li>MIN, MAX, AVERAGE bids per unique XXX</li>
+</ul>
+</li>
+<li>
+<p>Local features </p>
+
+<ul>
+<li>auction with more than 100 bidders </li>
+</ul>
+</li>
+<li><p>1:12 (1-12)</p></li>
+<li><p>13:900</p></li>
+<li><p>1 (sum)</p></li>
+<li>12x4 (1-13/ time)</li>
+<li>3552</li>
+</ul>
+
+<h3>
+<a id="log" class="anchor" href="#log" aria-hidden="true"><span class="octicon octicon-link"></span></a>Log</h3>
+
+<h3>
+<a id="history" class="anchor" href="#history" aria-hidden="true"><span class="octicon octicon-link"></span></a>History</h3>
+
+<ol>
+<li>1+7+7x4 features, SVM, 10 fold cv</li>
+<li>1+7+7x4 features, SVM, 5 fold cv</li>
+<li>1+7+7x4 features, SVM, 5 fold cv, 5 replicates</li>
+<li>1+7+7x4 features, SVM, 10 fold cv, 10 replicates</li>
+<li>1+11+11x4 features, SVM, 10 fold cv, 10 replicates</li>
+<li>1+11+11x4 features, SVM, 5 fold cv, 5 replicates</li>
+<li>1+11x4 features, SVM, 5 fold cv, 5 replicates </li>
+<li>1+11x4 features, SVM, 10 fold cv, 10 replicates </li>
+<li>1+13x4 features, SVM, 10 fold cv, 10 replicates </li>
+<li>1+13x4 features, SVM, 5 fold cv, 5 replicates </li>
+<li>1+13x4 features, SVM, 10 fold cv, 10 replicates, 0 feature -&gt; 0 prediction </li>
+<li>1+13x4 features, SVM, 10 fold cv, 10 replicates, voting over 10 replicates </li>
+<li>1+13x4 features, SVM, 15 fold cv, 15 replicates, voting over 15 replicates </li>
+<li>1+12x4 features (no hour-day), SVM, 15 fold cv, 15 replicates, voting over 15 replicates </li>
+<li>1+11x4 features (no hour,hour-day), SVM, 15 fold cv, 15 replicates, voting over 15 replicates </li>
+</ol>
+
+<table>
+<thead>
+<tr>
+<th align="right">ind</th>
+<th align="right">Time</th>
+<th align="right">Test AUC</th>
+<th align="right">Training best AUC</th>
+<th align="right">Training all AUC</th>
+<th align="right">SVM C</th>
+<th align="right">RBF G</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right">1</td>
+<td align="right">20150601</td>
+<td align="right"></td>
+<td align="right">0.8776</td>
+<td align="right">0.9600</td>
+<td align="right">10</td>
+<td align="right">0.1</td>
+</tr>
+<tr>
+<td align="right">2</td>
+<td align="right">20150601</td>
+<td align="right"></td>
+<td align="right">0.8729</td>
+<td align="right">0.9874</td>
+<td align="right">0.1</td>
+<td align="right">50</td>
+</tr>
+<tr>
+<td align="right">3</td>
+<td align="right">20150601</td>
+<td align="right"></td>
+<td align="right">0.8750</td>
+<td align="right">0.9181</td>
+<td align="right">0.05</td>
+<td align="right">0.01</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">20150601</td>
+<td align="right"></td>
+<td align="right">0.8808</td>
+<td align="right">0.9173</td>
+<td align="right">0.1</td>
+<td align="right">0.01</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td align="right">20150601</td>
+<td align="right"></td>
+<td align="right">0.8840</td>
+<td align="right">0.9212</td>
+<td align="right">0.05</td>
+<td align="right">0.01</td>
+</tr>
+<tr>
+<td align="right">6</td>
+<td align="right">20150601</td>
+<td align="right"></td>
+<td align="right">0.8873</td>
+<td align="right">0.9201</td>
+<td align="right">0.5</td>
+<td align="right">0.01</td>
+</tr>
+<tr>
+<td align="right">7</td>
+<td align="right">20150601</td>
+<td align="right"></td>
+<td align="right">0.8745</td>
+<td align="right">0.9257</td>
+<td align="right">0.05</td>
+<td align="right">100</td>
+</tr>
+<tr>
+<td align="right">8</td>
+<td align="right">20150601</td>
+<td align="right"></td>
+<td align="right">0.8743</td>
+<td align="right">0.9275</td>
+<td align="right">0.01</td>
+<td align="right">1</td>
+</tr>
+<tr>
+<td align="right">9</td>
+<td align="right">20150602</td>
+<td align="right">0.84797</td>
+<td align="right">0.8827</td>
+<td align="right">0.9902</td>
+<td align="right">0.5</td>
+<td align="right">50</td>
+</tr>
+<tr>
+<td align="right">10</td>
+<td align="right">20150602</td>
+<td align="right"></td>
+<td align="right">0.8790</td>
+<td align="right">0.9845</td>
+<td align="right">0.1</td>
+<td align="right">50</td>
+</tr>
+<tr>
+<td align="right">11</td>
+<td align="right">20150602</td>
+<td align="right">0.84797</td>
+<td align="right">0.8837</td>
+<td align="right">0.9902</td>
+<td align="right">0.5</td>
+<td align="right">50</td>
+</tr>
+<tr>
+<td align="right">12</td>
+<td align="right">20150602</td>
+<td align="right">0.85515</td>
+<td align="right">0.9148</td>
+<td align="right"></td>
+<td align="right">0.5</td>
+<td align="right">50</td>
+</tr>
+<tr>
+<td align="right">13</td>
+<td align="right">20150602</td>
+<td align="right"></td>
+<td align="right">0.9159</td>
+<td align="right"></td>
+<td align="right">0.5</td>
+<td align="right">50</td>
+</tr>
+<tr>
+<td align="right">14</td>
+<td align="right">20150603</td>
+<td align="right"></td>
+<td align="right">0.9184</td>
+<td align="right"></td>
+<td align="right">5</td>
+<td align="right">50</td>
+</tr>
+<tr>
+<td align="right">15</td>
+<td align="right">20150603</td>
+<td align="right"></td>
+<td align="right">0.9030</td>
+<td align="right"></td>
+<td align="right">5</td>
+<td align="right">50</td>
+</tr>
+</tbody>
+</table>
+
+<h3>
+<a id="experimental-settings-with-local-featuers" class="anchor" href="#experimental-settings-with-local-featuers" aria-hidden="true"><span class="octicon octicon-link"></span></a>Experimental settings with local featuers</h3>
+
+<ol>
+<li>1+12x4 global features + 10X2 averaged local features, auctions with &gt; 100 bidders, 10 fold cv+replications, voting in single best fold, centering</li>
+<li>1+12x4 global features + 10X2 averaged local features, auctions with &gt; 100 bidders, 10 fold cv+replications, use all training data, centering</li>
+<li>1+12x4 global features + 10X2 averaged local features, auctions with &gt; 100 bidders, 10 fold cv, use all training data, centering</li>
+<li><p>1+12x4 global features, auctions with &gt; 100 bidders, 10 fold cv, use all training data, centering</p></li>
+<li><p>Nx10 local auction features, auctions with &gt; 100 bidders, 10 fold cv+replications, centering</p></li>
+</ol>
+
+<table>
+<thead>
+<tr>
+<th align="right">ind</th>
+<th align="right">Time</th>
+<th align="right">Test AUC</th>
+<th align="right">Training best AUC</th>
+<th align="right">Training all AUC</th>
+<th align="right">K</th>
+<th align="right">k</th>
+<th align="right">SVM C</th>
+<th align="right">RBF G</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right">1</td>
+<td align="right">0604</td>
+<td align="right">0.83405</td>
+<td align="right">0.9160</td>
+<td align="right"></td>
+<td align="right">10</td>
+<td align="right">6</td>
+<td align="right">50</td>
+<td align="right">0.5</td>
+</tr>
+<tr>
+<td align="right">2</td>
+<td align="right">0604</td>
+<td align="right">0.83991</td>
+<td align="right">0.8919</td>
+<td align="right">0.9868</td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right">10</td>
+<td align="right">0.5</td>
+</tr>
+<tr>
+<td align="right">3</td>
+<td align="right">0604</td>
+<td align="right"></td>
+<td align="right">0.9002</td>
+<td align="right">0.9868</td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right">10</td>
+<td align="right">0.5</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">0604</td>
+<td align="right">0.83685</td>
+<td align="right">0.9028</td>
+<td align="right">0.9912</td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right">0.01</td>
+<td align="right">50</td>
+</tr>
+</tbody>
+</table>
+
+<ol>
+<li>1+13x4 global features (original x7, time x4, interval x2), 10 fold cv, use all training data, centering</li>
+<li>1+13x4 global features (original x7, time x4, interval x2) + duplicate x1 global feature x13, 10 fold cv, use all training data, centering</li>
+<li>1+13x4 global features (original x7, time x4, interval x2) + duplicate x2 global feature x13, 10 fold cv, use all training data, centering</li>
+<li>1+13x4 global features (original x7, time x4, interval x2) + duplicate x1 global feature x13 + local, 10 fold cv, use all training data, centering
+
+<ol>
+<li>local features
+
+<ol>
+<li>local feature, which is extracted from bider-auction file</li>
+<li>use auction with more than 5 bids</li>
+<li>features include
+
+<ol>
+<li>bid</li>
+<li>device</li>
+<li>country</li>
+<li>ip</li>
+<li>url</li>
+<li>interval</li>
+</ol>
+</li>
+<li>there is one bit for bid sum, one bit for averayge of each individual (this constraint is added and experimented as 5.)</li>
+</ol>
+</li>
+<li>global features
+
+<ol>
+<li>global feature are made by using all bids </li>
+<li>global feature includes
+
+<ol>
+<li>bid </li>
+<li>auction</li>
+<li>device</li>
+<li>country</li>
+<li>time</li>
+<li>ip</li>
+<li>url</li>
+<li>minute</li>
+<li>hour</li>
+<li>day</li>
+<li>hour-day</li>
+<li>interval</li>
+<li>average interval</li>
+</ol>
+</li>
+<li>there is only one bit for bid feature, four bits for others</li>
+</ol>
+</li>
+</ol>
+</li>
+<li>As 4, only 4.4 changes</li>
+<li>As 5, 5 fold cv </li>
+<li>As 5, global feature without time, 5 fold cv </li>
+<li>As 5, global feature without hour-day and interval, 10 fold cv </li>
+<li>As 5, + local time features, 10 fold cv </li>
+<li>As 9, random seed is 0</li>
+</ol>
+
+<table>
+<thead>
+<tr>
+<th align="right">Experiment</th>
+<th align="right">Time</th>
+<th align="right">Test AUC</th>
+<th align="right">CV best AUC</th>
+<th align="right">Training all AUC</th>
+<th align="right">K</th>
+<th align="right">k</th>
+<th align="right">SVM C</th>
+<th align="right">RBF G</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right">1</td>
+<td align="right">0605</td>
+<td align="right"></td>
+<td align="right">0.8987</td>
+<td align="right">0.9824</td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right">0.01</td>
+<td align="right">50</td>
+</tr>
+<tr>
+<td align="right">2</td>
+<td align="right">0605</td>
+<td align="right"></td>
+<td align="right">0.9038</td>
+<td align="right">0.9406</td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right">0.01</td>
+<td align="right">1</td>
+</tr>
+<tr>
+<td align="right">3</td>
+<td align="right">0605</td>
+<td align="right"></td>
+<td align="right">0.8996</td>
+<td align="right">0.9867</td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right">0.05</td>
+<td align="right">50</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">0605</td>
+<td align="right">0.85881</td>
+<td align="right">0.8959</td>
+<td align="right">0.9811</td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right">0.1</td>
+<td align="right">50</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td align="right">0605</td>
+<td align="right"></td>
+<td align="right">0.8962</td>
+<td align="right">0.9816</td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right">0.1</td>
+<td align="right">50</td>
+</tr>
+<tr>
+<td align="right">6</td>
+<td align="right">0605</td>
+<td align="right"></td>
+<td align="right">0.8922</td>
+<td align="right">0.9803</td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right">0.5</td>
+<td align="right">50</td>
+</tr>
+<tr>
+<td align="right">7</td>
+<td align="right">0605</td>
+<td align="right"></td>
+<td align="right">0.8727</td>
+<td align="right">0.9803</td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right">0.01</td>
+<td align="right">0.01</td>
+</tr>
+<tr>
+<td align="right">8</td>
+<td align="right">0605</td>
+<td align="right"></td>
+<td align="right">0.8900</td>
+<td align="right">0.9220</td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right">0.05</td>
+<td align="right">0.01</td>
+</tr>
+<tr>
+<td align="right">9</td>
+<td align="right">0605</td>
+<td align="right">0.86097</td>
+<td align="right">0.8964</td>
+<td align="right">0.9851</td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right">1</td>
+<td align="right">50</td>
+</tr>
+<tr>
+<td align="right">10</td>
+<td align="right">0605</td>
+<td align="right">0.88444</td>
+<td align="right">0.8956</td>
+<td align="right">0.9445</td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right">0.5</td>
+<td align="right">1</td>
+</tr>
+</tbody>
+</table>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">FacebookChallenge maintained by <a href="https://github.com/hongyusu">hongyusu</a></p>
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
