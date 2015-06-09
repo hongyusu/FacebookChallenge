@@ -1,37 +1,25 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en-us">
   <head>
-    <meta charset='utf-8'>
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="description" content="FacebookChallenge : ">
-
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
-
-    <title>FacebookChallenge</title>
+    <meta charset="UTF-8">
+    <title>FacebookChallenge by hongyusu</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
   </head>
-
   <body>
+    <section class="page-header">
+      <h1 class="project-name">FacebookChallenge</h1>
+      <h2 class="project-tagline"></h2>
+      <a href="https://github.com/hongyusu/FacebookChallenge" class="btn">View on GitHub</a>
+      <a href="https://github.com/hongyusu/FacebookChallenge/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/hongyusu/FacebookChallenge/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
 
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/hongyusu/FacebookChallenge">View on GitHub</a>
-
-          <h1 id="project_title">FacebookChallenge</h1>
-          <h2 id="project_tagline"></h2>
-
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/hongyusu/FacebookChallenge/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/hongyusu/FacebookChallenge/tarball/master">Download this project as a tar.gz file</a>
-            </section>
-        </header>
-    </div>
-
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
-        <h1>
+    <section class="main-content">
+      <h1>
 <a id="facebook-challenge-of-detecting-bots-in-the-online-bidding-environment" class="anchor" href="#facebook-challenge-of-detecting-bots-in-the-online-bidding-environment" aria-hidden="true"><span class="octicon octicon-link"></span></a>Facebook challenge of detecting bots in the online bidding environment</h1>
 
 <p>This repository contains the strategies, models and algorithms I used in Facebook challenge of detecting bots in the online bidding environment. The model I developed has an AUC score of 93.269% where the best AUC score reported in the leaderboard is about 94.254%, ranking 56 out of 1004. Everything documented here is done within about one week's time, and mostly at night. The model can be surely improved given more time. In particular, </p>
@@ -40,7 +28,7 @@
 <li>Event website: <a href="https://www.kaggle.com/c/facebook-recruiting-iv-human-or-bot">https://www.kaggle.com/c/facebook-recruiting-iv-human-or-bot</a> </li>
 <li>Leaderboard: <a href="https://www.kaggle.com/c/facebook-recruiting-iv-human-or-bot/leaderboard?submissionId=1680911">https://www.kaggle.com/c/facebook-recruiting-iv-human-or-bot/leaderboard?submissionId=1680911</a>
 </li>
-<li>My participantion name: Aalto</li>
+<li>My participation name: Aalto</li>
 <li>Ranking: 56 / 1004</li>
 <li>Performance in AUC: 93.269% / 94.254%</li>
 <li>GitHub project website: <a href="http://hongyusu.github.io/FacebookChallenge/">http://hongyusu.github.io/FacebookChallenge/</a> </li>
@@ -51,15 +39,15 @@
 <h2>
 <a id="lessons-learned" class="anchor" href="#lessons-learned" aria-hidden="true"><span class="octicon octicon-link"></span></a>Lessons learned</h2>
 
-<p>First thing first, lessons learned from this competetion can be potentially useful. They are summerized in the following bullet list</p>
+<p>First thing first, lessons learned from this competition can be potentially useful. They are summarised in the following bullet list</p>
 
 <ol>
 <li>Support Vector Machine can be useful as a baseline classifier for the following reasons
 
 <ol>
-<li>SVM is a stable classifier. It is robust against training data pertubation.</li>
+<li>SVM is a stable classifier. It is robust against training data perturbation.</li>
 <li>There are rich kernel functions in SVM which can do nonlinear feature map that map the data point from the original feature space to high dimensional feature space.</li>
-<li>In particular, kernel SVM allows user-defined kernel function for measuring similariries.</li>
+<li>In particular, kernel SVM allows user-defined kernel function for measuring similarities.</li>
 <li>The optimization of the model is standard and fast.</li>
 <li>SVM training and prediction is implemented in, e.g., LibSVM package.</li>
 </ol>
@@ -75,7 +63,7 @@
 <li>Random forest is another good option in addition to SVM for the following reasons:
 
 <ol>
-<li>Random forest does not need feature normalization, centering, etc.</li>
+<li>Random forest does not need feature normalization, cantering, etc.</li>
 <li>Well, I guess random forest somehow needs feature selection, but not very extensive.</li>
 <li>Random forest does not have many parameter to tune where the only parameter in random forest is the number of decision trees.</li>
 <li>It is relatively fast to learn a random forest classifier than learning a SVM model.</li>
@@ -84,7 +72,7 @@
 </li>
 <li>Adding more feature is not always helpful. In many cases, more feature will be harmful to the performance.</li>
 <li>It is  better to start with one classification model (e.g., SVM) and perform the experiments. Tune the model until hitting the bottleneck of the model. Then wisely change to another classification methods (e.g., random forest).</li>
-<li>Measure the performance in terms of AUC other than Accuracy, as accuracy is easily misleaded by the biasness of the data.</li>
+<li>Measure the performance in terms of AUC other than Accuracy, as accuracy is easily mislead by the biasness of the data.</li>
 <li>Training data and test data are sometime very heterogeneous. Parameter selection and model performance based on the Cross validation on the training data might not be similary on the test data.</li>
 </ol>
 
@@ -188,7 +176,7 @@
 </tr>
 <tr>
 <td align="right">14</td>
-<td align="right">average intercal</td>
+<td align="right">average interval</td>
 <td align="right">15</td>
 </tr>
 </tbody>
@@ -437,7 +425,7 @@
 <li>Support Vector Machine (SVM) with probability output as baseline learner.</li>
 <li>Feature representation of data is introduced in the last section.</li>
 <li>We center the feature vector to have zero mean and unit variance such that points are located in a unit square.</li>
-<li>Centering the featuer is done base on both training and testing data.</li>
+<li>Centering the feature is done base on both training and testing data.</li>
 <li>We use <em>Gaussian</em> RBF kernel over the feature representation of the data points.</li>
 <li>We use grid Search for the best parameter combination, e,g, margin slack parameter, <em>Gaussian</em> width parameter.</li>
 <li>Best model is then used for prediction.</li>
@@ -842,6 +830,8 @@
 
 <p>Best performance is achieved with model 2.2. In particular, it is a random forest learner with various hand made featuers.</p>
 
+<hr>
+
 <h2>
 <a id="history-of-coding-and-experiments" class="anchor" href="#history-of-coding-and-experiments" aria-hidden="true"><span class="octicon octicon-link"></span></a>History of coding and experiments</h2>
 
@@ -1245,7 +1235,7 @@
 <li>interval</li>
 </ol>
 </li>
-<li>there is one bit for bid sum, one bit for averayge of each individual (this constraint is added and experimented as 5.)</li>
+<li>there is one bit for bid sum, one bit for average of each individual (this constraint is added and experimented as 5.)</li>
 </ol>
 </li>
 <li>global features
@@ -1410,18 +1400,16 @@
 </tr>
 </tbody>
 </table>
-      </section>
-    </div>
 
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">FacebookChallenge maintained by <a href="https://github.com/hongyusu">hongyusu</a></p>
-        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/hongyusu/FacebookChallenge">FacebookChallenge</a> is maintained by <a href="https://github.com/hongyusu">hongyusu</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
       </footer>
-    </div>
 
-    
+    </section>
 
+  
   </body>
 </html>
+
