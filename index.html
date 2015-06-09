@@ -1,58 +1,79 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en-us">
   <head>
-    <meta charset='utf-8'>
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="description" content="FacebookChallenge : ">
-
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
-
-    <title>FacebookChallenge</title>
+    <meta charset="UTF-8">
+    <title>FacebookChallenge by hongyusu</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
   </head>
-
   <body>
+    <section class="page-header">
+      <h1 class="project-name">FacebookChallenge</h1>
+      <h2 class="project-tagline"></h2>
+      <a href="https://github.com/hongyusu/FacebookChallenge" class="btn">View on GitHub</a>
+      <a href="https://github.com/hongyusu/FacebookChallenge/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/hongyusu/FacebookChallenge/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
 
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/hongyusu/FacebookChallenge">View on GitHub</a>
-
-          <h1 id="project_title">FacebookChallenge</h1>
-          <h2 id="project_tagline"></h2>
-
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/hongyusu/FacebookChallenge/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/hongyusu/FacebookChallenge/tarball/master">Download this project as a tar.gz file</a>
-            </section>
-        </header>
-    </div>
-
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
-        <h1>
+    <section class="main-content">
+      <h1>
 <a id="facebook-challenge-of-detecting-bots-in-the-online-bidding-environment" class="anchor" href="#facebook-challenge-of-detecting-bots-in-the-online-bidding-environment" aria-hidden="true"><span class="octicon octicon-link"></span></a>Facebook challenge of detecting bots in the online bidding environment</h1>
 
-<p>This repository documents the strategy, model and algorithm I used in Facebook challenge of detecting bots in the online bidding environment. The model I developed has an AUC score of 90.757% where the best AUC score reported in the leaderboard is about 94%.</p>
+<p>This repository contains the strategies, models and algorithms I used in Facebook challenge of detecting bots in the online bidding environment. The model I developed has an AUC score of 93.269% where the best AUC score reported in the leaderboard is about 94.254%, ranking 56 out of 1004. Everything documented here is done within about one week's time, and mostly at night. The model can be surely improved given more time. In particular, </p>
+
+<ol>
+<li>Event website: <a href="https://www.kaggle.com/c/facebook-recruiting-iv-human-or-bot">https://www.kaggle.com/c/facebook-recruiting-iv-human-or-bot</a> </li>
+<li>Leaderboard: <a href="https://www.kaggle.com/c/facebook-recruiting-iv-human-or-bot/leaderboard?submissionId=1680911">https://www.kaggle.com/c/facebook-recruiting-iv-human-or-bot/leaderboard?submissionId=1680911</a>
+</li>
+<li>My participantion name: Aalto</li>
+<li>Ranking: 56 / 1004</li>
+<li>Performance in AUC: 93.269% / 94.254%</li>
+<li>GitHub project website: <a href="http://hongyusu.github.io/FacebookChallenge/">http://hongyusu.github.io/FacebookChallenge/</a> </li>
+<li>GitHub project page: <a href="https://github.com/hongyusu/FacebookChallenge">https://github.com/hongyusu/FacebookChallenge</a>
+</li>
+</ol>
 
 <h2>
 <a id="lessons-learned" class="anchor" href="#lessons-learned" aria-hidden="true"><span class="octicon octicon-link"></span></a>Lessons learned</h2>
 
-<p>First thing first, lessons learned from this competetion can be potentially useful. They are summerized as the following bullet list</p>
+<p>First thing first, lessons learned from this competetion can be potentially useful. They are summerized in the following bullet list</p>
 
 <ol>
-<li>Support can be used as a baseline classifier. It is a stable classifier which is not very good for ensemble model.</li>
-<li>Random forest can be very useful in addition to SVM for the following reasons:
+<li>Support Vector Machine can be useful as a baseline classifier for the following reasons
 
 <ol>
-<li>RF does not need feature normalization, centering, etc</li>
-<li>RF does not have many parameter to tune</li>
-<li>It is relatively fast to learn a RF than SVM</li>
-<li>Off-the-shelf function in MATLAB</li>
+<li>SVM is a stable classifier. It is robust against training data pertubation.</li>
+<li>There are rich kernel functions in SVM which can do nonlinear feature map that map the data point from the original feature space to high dimensional feature space.</li>
+<li>In particular, kernel SVM allows user-defined kernel function for measuring similariries.</li>
+<li>The optimization of the model is standard and fast.</li>
+<li>SVM training and prediction is implemented in, e.g., LibSVM package.</li>
 </ol>
 </li>
-<li>Adding more feature will not always helpful</li>
+<li>However, it is better not to completely trust SVM for the following reasons
+
+<ol>
+<li>It is not very efficient for large-scale data.</li>
+<li>Although kernel SVM is very useful, it is not practical in most cases when the number of training data is over a few thousands.</li>
+<li>It is a stable classifier, therefore, it is not very good to use as the base learner in ensemble learning.</li>
+</ol>
+</li>
+<li>Random forest is another good option in addition to SVM for the following reasons:
+
+<ol>
+<li>Random forest does not need feature normalization, centering, etc.</li>
+<li>Well, I guess random forest somehow needs feature selection, but not very extensive.</li>
+<li>Random forest does not have many parameter to tune where the only parameter in random forest is the number of decision trees.</li>
+<li>It is relatively fast to learn a random forest classifier than learning a SVM model.</li>
+<li>Off-the-shelf function in MATLAB.</li>
+</ol>
+</li>
+<li>Adding more feature is not always helpful. In many cases, more feature will be harmful to the performance.</li>
+<li>It is  better to start with one classification model (e.g., SVM) and perform the experiments. Tune the model until hitting the bottleneck of the model. Then wisely change to another classification methods (e.g., random forest).</li>
+<li>Measure the performance in terms of AUC other than Accuracy, as accuracy is easily misleaded by the biasness of the data.</li>
+<li>Training data and test data are sometime very heterogeneous. Parameter selection and model performance based on the Cross validation on the training data might not be similary on the test data.</li>
 </ol>
 
 <h2>
@@ -64,20 +85,20 @@
 <a id="feature-representation" class="anchor" href="#feature-representation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Feature representation</h3>
 
 <ol>
-<li>Features are extract from auction log including local features, global features, local per hour feature, <em>bag-of-words</em> features</li>
+<li>Features are extract from auction log including local features, global features, local per hour feature, <em>bag-of-words</em> features.</li>
 <li>
-<p>Some of the features are not used in the learning algorithm, which can potentially improve the prediction performance of the model</p>
+<p>Some of the features are not used in the learning algorithm, which can potentially improve the prediction performance of the model.</p>
 
 <ol>
 <li>
 <p>Global features</p>
 
 <ol>
-<li>Global feature are made by using all bids </li>
-<li>Global features are listed in the following table</li>
-<li>There is only one bit for bid feature, four bits for others</li>
+<li>Global feature are made by using all bids. </li>
+<li>Global features are listed in the following table.</li>
+<li>There is only one bit for bid feature, four bits for others.</li>
 <li>
-<p>Feature number 8-14 are computed but are not used in this stage</p>
+<p>Feature number 8-14 are computed but are not used in this stage.</p>
 
 <table>
 <thead>
@@ -167,11 +188,11 @@
 <p>Auction specific features</p>
 
 <ol>
-<li>Auction specific features are extracted from bider-auction files</li>
-<li>We use auctions which has more than 2 bids</li>
-<li>Features are listed in the following table </li>
+<li>Auction specific features are extracted from bider-auction files.</li>
+<li>We use auctions which has more than 2 bids.</li>
+<li>Features are listed in the following table.</li>
 <li>
-<p>Besides there being one position for the bid sum, there is one position for average of each individual</p>
+<p>Besides there being one position for the bid sum, there is one position for average of each individual.</p>
 
 <table>
 <thead>
@@ -221,10 +242,10 @@
 <p>Per-hour features</p>
 
 <ol>
-<li>Per-hour features include features listed in the following table:</li>
-<li>Per-hour features are computed based on hours</li>
+<li>Per-hour features include features listed in the following table.</li>
+<li>Per-hour features are computed based on hours.</li>
 <li>
-<p>There is one position for the average of the per hour features</p>
+<p>There is one position for the average of the per hour features.</p>
 
 <table>
 <thead>
@@ -279,10 +300,10 @@
 <p>Per-minute features</p>
 
 <ol>
-<li>Per-minute features include features listed in the following table:</li>
-<li>Per-minute features are computed based on minute</li>
+<li>Per-minute features include features listed in the following table.</li>
+<li>Per-minute features are computed based on minute.</li>
 <li>
-<p>There is one position for the average of the per minute features</p>
+<p>There is one position for the average of the per minute features.</p>
 
 <table>
 <thead>
@@ -337,9 +358,9 @@
 <p><em>bag-of-words</em> features</p>
 
 <ol>
-<li>Each bider is represented by the following <em>bag-of-words</em> features</li>
-<li>Most of them are not used in the current stage of the experiment due to the time limit</li>
-<li>However, we consider auction/merchandise/device/country information as the only <em>bag-of-words</em> features</li>
+<li>Each bider is represented by the following <em>bag-of-words</em> features.</li>
+<li>Most of them are not used in the current stage of the experiment due to the time limit.</li>
+<li>However, we consider auction/merchandise/device/country information as the only <em>bag-of-words</em> features.</li>
 </ol>
 
 <table>
@@ -408,7 +429,7 @@
 <li>We use <em>Gaussian</em> RBF kernel over the feature representation of the data points.</li>
 <li>We use grid Search for the best parameter combination, e,g, margin slack parameter, <em>Gaussian</em> width parameter.</li>
 <li>Best model is then used for prediction.</li>
-<li>We use the implementation of SVM from LibSVM toolbox</li>
+<li>We use the implementation of SVM from LibSVM toolbox.</li>
 <li>
 <p>The basic MATLAB usage example is </p>
 
@@ -423,13 +444,16 @@
 <p>Random Forest </p>
 
 <ol>
-<li>We use build-in function in MATLAB</li>
-<li>We tune the parameter of the number of trees with 10 fold cross validation</li>
-<li>The best model is then used for prediction</li>
-<li>The basic MATLAB usage example is 
-model = TreeBagger(c,Xtr,Ytr, 'Method', 'classification');
-[~,Yprobtree] = predict(model, Xts);</li>
-<li>Be careful with the order of the probability outputs</li>
+<li>We use build-in function in MATLAB.</li>
+<li>We tune the parameter of the number of trees with 10 fold cross validation.</li>
+<li>The best model is then used for prediction.</li>
+<li>
+<p>The basic MATLAB usage example is </p>
+
+<p>model = TreeBagger(c,Xtr,Ytr, 'Method', 'classification');
+[~,Yprobtree] = predict(model, Xts);</p>
+</li>
+<li><p>Be careful with the order of the probability outputs.</p></li>
 </ol>
 </li>
 </ol>
@@ -437,10 +461,10 @@ model = TreeBagger(c,Xtr,Ytr, 'Method', 'classification');
 <h3>
 <a id="measure-the-performance" class="anchor" href="#measure-the-performance" aria-hidden="true"><span class="octicon octicon-link"></span></a>Measure the performance</h3>
 
-<p>We use AUC score to measure the prediction performance of the models.</p>
+<p>We use AUC score to measure the prediction performance of the models. AUC is the area under the ROC curve.</p>
 
 <h3>
-<a id="experiments" class="anchor" href="#experiments" aria-hidden="true"><span class="octicon octicon-link"></span></a>Experiments:</h3>
+<a id="experimental-results" class="anchor" href="#experimental-results" aria-hidden="true"><span class="octicon octicon-link"></span></a>Experimental results:</h3>
 
 <ol>
 <li>
@@ -1374,18 +1398,16 @@ model = TreeBagger(c,Xtr,Ytr, 'Method', 'classification');
 </tr>
 </tbody>
 </table>
-      </section>
-    </div>
 
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">FacebookChallenge maintained by <a href="https://github.com/hongyusu">hongyusu</a></p>
-        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/hongyusu/FacebookChallenge">FacebookChallenge</a> is maintained by <a href="https://github.com/hongyusu">hongyusu</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
       </footer>
-    </div>
 
-    
+    </section>
 
+  
   </body>
 </html>
+
